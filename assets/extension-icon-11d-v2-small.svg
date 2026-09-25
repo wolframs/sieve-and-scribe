@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 512 512"
+     role="img"
+     aria-label="Layered agent interface icon (small sizes)">
+  <!-- 16px variant: four nodes and two chevrons turn to mush below ~32px, and a
+       single node in the dark panel reads as an eyeball. Keep the stack idea
+       instead: plate with inset panel + ONE chevron, everything oversized. -->
+  <defs>
+    <linearGradient id="topGradientS" x1="40" y1="80" x2="472" y2="440"
+                    gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#4F7CFF"/>
+      <stop offset="0.48" stop-color="#8B5CFF"/>
+      <stop offset="1" stop-color="#C95CFF"/>
+    </linearGradient>
+    <linearGradient id="sideGradientS" x1="40" y1="80" x2="472" y2="440"
+                    gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B5ED9"/>
+      <stop offset="0.5" stop-color="#6A45D4"/>
+      <stop offset="1" stop-color="#9E46D6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Plate side wall (lower faces only). -->
+  <path d="M36 168 L36 200 L256 324 L476 200 L476 168 L256 292 Z"
+        fill="url(#sideGradientS)"/>
+  <!-- Plate. -->
+  <path d="M256 44 L476 168 L256 292 L36 168 Z"
+        fill="url(#topGradientS)"/>
+  <!-- Inset panel. -->
+  <path d="M256 96 L384 168 L256 240 L128 168 Z"
+        fill="#131226"/>
+
+  <!-- One oversized chevron. -->
+  <path d="M78 348 L256 450 L434 348"
+        fill="none"
+        stroke="url(#sideGradientS)"
+        stroke-width="64"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        transform="translate(0 18)"/>
+  <path d="M78 348 L256 450 L434 348"
+        fill="none"
+        stroke="url(#topGradientS)"
+        stroke-width="58"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+</svg>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sieve &amp; Scribe</title>
+  <style>
+    /* Mirrors the chat panel's design system (style.css): same tokens, aurora
+       accent gradient, glass surfaces. Dark by default, light via media query. */
+    :root {
+      --bg: #16171b;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-2: rgba(255, 255, 255, 0.07);
+      --surface-hover: rgba(255, 255, 255, 0.12);
+      --text: #e9ecf1;
+      --text-dim: #9aa0a8;
+      --border: rgba(255, 255, 255, 0.10);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --accent: #8b7bff;
+      --accent-grad: linear-gradient(135deg, #4f7cff 0%, #8b5cff 55%, #c95cff 100%);
+      --accent-soft: rgba(139, 123, 255, 0.35);
+      --ok: #3fbf5f;
+      --bad: #e35d5d;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #fbfbfd;
+        --surface: rgba(10, 12, 20, 0.04);
+        --surface-2: rgba(10, 12, 20, 0.06);
+        --surface-hover: rgba(10, 12, 20, 0.10);
+        --text: #16181d;
+        --text-dim: #6b7280;
+        --border: rgba(10, 12, 20, 0.10);
+        --border-soft: rgba(10, 12, 20, 0.07);
+        --accent: #6d4eff;
+        --accent-grad: linear-gradient(135deg, #3b7bff 0%, #7c5cff 55%, #c24cff 100%);
+        --accent-soft: rgba(124, 92, 255, 0.25);
+        --ok: #2b8a3e;
+        --bad: #d64545;
+      }
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* header — brand dot + title over a gradient hairline, like the chat panel */
+    .popup-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border-soft);
+      position: relative;
+    }
+    .popup-header::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0; bottom: -1px;
+      height: 1px;
+      background: var(--accent-grad);
+      opacity: 0.5;
+    }
+    .brand-dot {
+      width: 22px;
+      height: 22px;
+      border-radius: 7px;
+      background: var(--accent-grad);
+      box-shadow: 0 2px 10px -1px var(--accent-soft);
+      flex: none;
+      position: relative;
+    }
+    .brand-dot::after {
+      content: '✦';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 12px;
+      line-height: 1;
+    }
+    .popup-title {
+      font-size: 13.5px;
+      font-weight: 650;
+      letter-spacing: 0.1px;
+    }
+
+    .popup-body { padding: 12px 16px 16px; }
+
+    /* status card */
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border-soft);
+      border-radius: 10px;
+      padding: 2px 12px;
+      margin-bottom: 14px;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 0;
+    }
+    .status-row + .status-row { border-top: 1px solid var(--border-soft); }
+    .status-label { flex: 1; color: var(--text-dim); }
+    .status-value { font-weight: 500; }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      display: inline-block;
+      flex: none;
+    }
+    .status-dot.active { background: var(--ok); box-shadow: 0 0 6px var(--ok); }
+    .status-dot.inactive { background: var(--bad); box-shadow: 0 0 6px var(--bad); }
+    .status-dot.warning { background: #e8930c; box-shadow: 0 0 6px #e8930c; }
+
+    .section { margin-top: 10px; }
+    .section-title {
+      font-size: 10.5px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 5px;
+      letter-spacing: 0.6px;
+    }
+
+    select, button { font-family: inherit; font-size: 13px; color: var(--text); }
+    select {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+    select:hover { background: var(--surface-hover); }
+    select:focus { border-color: var(--accent); }
+    option { background: #1f2026; color: #e9ecf1; }
+    @media (prefers-color-scheme: light) {
+      option { background: #fff; color: #16181d; }
+    }
+
+    /* buttons — one shared metric so the row always lines up */
+    .btn-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .btn {
+      flex: 1;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 550;
+      transition: filter 0.15s ease, background 0.15s ease;
+    }
+    .btn-primary {
+      background: var(--accent-grad);
+      color: #fff;
+      box-shadow: 0 2px 12px -2px var(--accent-soft);
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-secondary {
+      background: var(--surface-2);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover { background: var(--surface-hover); }
+
+    /* inline model editor (custom entry / All-models search) — select-shaped */
+    .model-inline {
+      width: 100%;
+      height: 34px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border: 1px solid var(--accent);
+      background: var(--surface-2);
+      outline: none;
+    }
+
+    .error {
+      color: #ff8787;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-header">
+    <span class="brand-dot"></span>
+    <span class="popup-title">Sieve &amp; Scribe</span>
+  </div>
+  <div class="popup-body">
+    <div class="status-card">
+      <div class="status-row">
+        <span class="status-label">CivitAI Page</span>
+        <span class="status-dot" id="pageStatus"></span>
+        <span class="status-value" id="pageStatusText">Checking...</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">API Provider</span>
+        <span class="status-value" id="providerName">-</span>
+      </div>
+
+      <div class="status-row">
+        <span class="status-label">API Key</span>
+        <span class="status-dot" id="keyStatus"></span>
+        <span class="status-value" id="keyStatusText">-</span>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Provider</div>
+      <select id="providerSelect">
+        <option value="xai">xAI</option>
+        <option value="openrouter">OpenRouter</option>
+      </select>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Model</div>
+      <select id="modelSelect"></select>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn btn-primary" id="togglePanelBtn">Open Chat</button>
+      <button class="btn btn-secondary" id="settingsBtn">Settings</button>
+    </div>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>

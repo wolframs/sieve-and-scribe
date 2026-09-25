@@ -1,0 +1,17 @@
+node_modules/
+.output/
+.wxt/
+.env
+.env.*
+stats.html
+stats-*.json
+.artifacts/
+.browser-smoke/
+
+.api_keys
+_keys.json
+cllp-test-keys.json
+
+# Saved copy of CivitAI's generate page (pre-2026-redesign DOM reconnaissance)
+Generate_files/
+Generate.mhtml

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sieve &amp; Scribe — Settings</title>
+  <style>
+    :root {
+      --bg: #111216;
+      --surface: #1a1c21;
+      --surface-2: #212329;
+      --surface-3: #282b32;
+      --text: #e9ecf1;
+      --text-dim: #9aa0a8;
+      --border: rgba(255, 255, 255, 0.09);
+      --border-soft: rgba(255, 255, 255, 0.06);
+      --accent: #8b7bff;
+      --accent-grad: linear-gradient(135deg, #4f7cff 0%, #8b5cff 55%, #c95cff 100%);
+      --accent-soft: rgba(139, 123, 255, 0.30);
+      --ok: #51cf66;
+      --err: #ff8787;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      line-height: 1.5;
+      background:
+        radial-gradient(1100px 480px at 78% -8%, rgba(139, 92, 255, 0.10), transparent 60%),
+        radial-gradient(900px 420px at 10% 0%, rgba(79, 124, 255, 0.08), transparent 55%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* sticky header / action bar */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(17, 18, 22, 0.78);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .topbar::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background: var(--accent-grad);
+      opacity: 0.5;
+    }
+    .topbar-inner {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 16px 28px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .brand-dot {
+      width: 34px; height: 34px; border-radius: 10px;
+      background: var(--accent-grad);
+      box-shadow: 0 4px 16px -2px var(--accent-soft);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; color: #fff; flex: none;
+    }
+    .brand-text h1 { font-size: 17px; font-weight: 650; letter-spacing: 0.2px; }
+    .brand-text p { font-size: 11.5px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+    .topbar-actions { margin-left: auto; display: flex; align-items: center; gap: 10px; }
+    .saved-indicator { color: var(--ok); font-size: 13px; opacity: 0; transition: opacity 0.2s; }
+    .saved-indicator.show { opacity: 1; }
+
+    .container { max-width: 1040px; margin: 0 auto; padding: 28px 28px 80px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 18px;
+    }
+    .span-2 { grid-column: 1 / -1; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .card.provider.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft), 0 14px 40px -20px var(--accent-soft);
+    }
+    .card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 18px; gap: 12px;
+    }
+    .card-title { font-size: 15px; font-weight: 650; display: flex; align-items: center; gap: 9px; }
+    .card-title .tag {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
+      color: var(--text-dim); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
+    }
+    .card-desc { font-size: 12.5px; color: var(--text-dim); margin: -10px 0 16px; }
+
+    /* active provider radio pill */
+    .active-toggle {
+      display: inline-flex; align-items: center; gap: 7px;
+      font-size: 12px; font-weight: 600; color: var(--text-dim);
+      cursor: pointer; user-select: none;
+      border: 1px solid var(--border); border-radius: 999px; padding: 5px 11px;
+      transition: all 0.15s ease;
+    }
+    .active-toggle:hover { color: var(--text); border-color: var(--text-dim); }
+    .active-toggle input { accent-color: var(--accent); cursor: pointer; margin: 0; }
+    .provider.active .active-toggle {
+      color: #fff; border-color: transparent; background: var(--accent-grad);
+    }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    label.lbl {
+      display: block; font-size: 11px; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 7px; letter-spacing: 0.6px; font-weight: 600;
+    }
+
+    input[type="text"], input[type="password"], input[type="number"], textarea, select {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+    }
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239aa0a8' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 13px center;
+      padding-right: 34px;
+    }
+    textarea { resize: vertical; min-height: 120px; }
+    textarea.mono { font-family: ui-monospace, 'SF Mono', 'Cascadia Code', Menlo, monospace; font-size: 13px; line-height: 1.6; }
+
+    .password-wrapper { position: relative; }
+    .password-toggle {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      background: var(--surface-3); border: none; color: var(--text-dim);
+      cursor: pointer; font-size: 11px; font-weight: 600; padding: 5px 9px; border-radius: 7px;
+    }
+    .password-toggle:hover { color: var(--text); }
+
+    .btn {
+      padding: 10px 18px; border: none; border-radius: 10px; cursor: pointer;
+      font-family: inherit; font-size: 14px; font-weight: 600;
+      transition: filter 0.15s ease, background 0.15s ease, transform 0.1s ease;
+      display: inline-flex; align-items: center; gap: 7px;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--accent-grad); color: #fff; box-shadow: 0 6px 18px -6px var(--accent-soft); }
+    .btn-primary:hover { filter: brightness(1.08); }
+    .btn-ghost { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+    .btn-ghost:hover { background: var(--surface-3); }
+    .btn-sm { padding: 7px 13px; font-size: 12.5px; }
+    .btn-test { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); white-space: nowrap; }
+    .btn-test:hover { border-color: var(--accent); }
+    .btn-test:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .test-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .status-msg { font-size: 12.5px; padding: 7px 12px; border-radius: 8px; }
+    .status-success { background: rgba(81, 207, 102, 0.12); color: var(--ok); }
+    .status-error { background: rgba(255, 135, 135, 0.12); color: var(--err); }
+
+    /* range */
+    .range-row { display: flex; align-items: center; gap: 14px; }
+    .range-row input[type="range"] { flex: 1; }
+    .range-value {
+      min-width: 46px; text-align: center; font-variant-numeric: tabular-nums;
+      font-weight: 650; background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 5px 0;
+    }
+    input[type="range"] {
+      -webkit-appearance: none; appearance: none; height: 6px;
+      background: var(--surface-3); border-radius: 3px; outline: none;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent-grad); cursor: pointer; box-shadow: 0 2px 8px -1px var(--accent-soft);
+    }
+
+    /* switch (civitai tools) */
+    .switch-field { display: flex; align-items: flex-start; gap: 12px; }
+    .switch { position: relative; flex: none; width: 40px; height: 23px; margin-top: 1px; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .switch .slider {
+      position: absolute; inset: 0; cursor: pointer; border-radius: 999px;
+      background: var(--surface-3); transition: background 0.18s ease;
+    }
+    .switch .slider::before {
+      content: ''; position: absolute; height: 17px; width: 17px; left: 3px; top: 3px;
+      background: #fff; border-radius: 50%; transition: transform 0.18s ease;
+    }
+    .switch input:checked + .slider { background: linear-gradient(135deg, #4f7cff, #8b5cff); }
+    .switch input:checked + .slider::before { transform: translateX(17px); }
+    .switch-label { font-size: 13.5px; }
+    .switch-label small { display: block; color: var(--text-dim); font-size: 12px; margin-top: 2px; }
+
+    .prompt-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .char-count { font-size: 11.5px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+    .hint { font-size: 12px; color: var(--text-dim); margin-top: 8px; }
+    .hint b { color: var(--accent); font-weight: 600; }
+    .diagnostic-head { display:flex; align-items:flex-start; justify-content:space-between; gap:18px; }
+    .diagnostic-count { flex:none; padding:4px 9px; border:1px solid var(--border);
+      border-radius:999px; color:var(--text-dim); background:var(--surface-2); font-size:11.5px;
+      font-variant-numeric:tabular-nums; }
+    .diagnostic-actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .diagnostic-result { min-height:20px; margin-top:10px; color:var(--text-dim); font-size:12px; }
+    .diagnostic-result.error { color:var(--err); }
+    .diagnostic-result.success { color:var(--ok); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand-dot">✦</div>
+      <div class="brand-text">
+        <h1>Sieve &amp; Scribe</h1>
+        <p>Operator settings</p>
+      </div>
+      <div class="topbar-actions">
+        <span class="saved-indicator" id="savedIndicator">✓ Saved</span>
+        <button class="btn btn-ghost btn-sm" id="resetBtn">Reset all</button>
+        <button class="btn btn-primary btn-sm" id="saveBtn">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <!-- Providers -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="card provider" id="xaiCard">
+        <div class="card-head">
+          <div class="card-title">xAI <span class="tag">Grok</span></div>
+          <label class="active-toggle">
+            <input type="radio" name="activeProvider" value="xai" /> Active
+          </label>
+        </div>
+        <div class="field">
+          <label class="lbl">API Key</label>
+          <div class="password-wrapper">
+            <input type="password" id="xaiApiKey" placeholder="xai-…" />
+            <button class="password-toggle" data-target="xaiApiKey">Show</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Model</label>
+          <select id="xaiModel"></select>
+        </div>
+        <div class="field test-row">
+          <button class="btn btn-test btn-sm" id="xaiTestBtn">Test connection</button>
+          <div class="status-msg" id="xaiTestResult" style="display:none"></div>
+        </div>
+      </div>
+
+      <div class="card provider" id="openrouterCard">
+        <div class="card-head">
+          <div class="card-title">OpenRouter <span class="tag">Multi-model</span></div>
+          <label class="active-toggle">
+            <input type="radio" name="activeProvider" value="openrouter" /> Active
+          </label>
+        </div>
+        <div class="field">
+          <label class="lbl">API Key</label>
+          <div class="password-wrapper">
+            <input type="password" id="openrouterApiKey" placeholder="sk-or-…" />
+            <button class="password-toggle" data-target="openrouterApiKey">Show</button>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Model</label>
+          <select id="openrouterModel"></select>
+        </div>
+        <div class="field test-row">
+          <button class="btn btn-test btn-sm" id="openrouterTestBtn">Test connection</button>
+          <div class="status-msg" id="openrouterTestResult" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Generation + Civitai -->
+    <div class="grid-2" style="margin-bottom:18px">
+      <div class="card">
+        <div class="card-head"><div class="card-title">Generation</div></div>
+        <div class="field">
+          <label class="lbl">Temperature</label>
+          <div class="range-row">
+            <input type="range" id="temperature" min="0" max="2" step="0.1" value="0.7" />
+            <span class="range-value" id="tempValue">0.7</span>
+          </div>
+        </div>
+        <div class="field">
+          <label class="lbl">Max tokens</label>
+          <input type="number" id="maxTokens" min="64" max="8192" step="64" value="2048" />
+        </div>
+        <div class="field switch-field">
+          <label class="switch">
+            <input type="checkbox" id="rollingContext" />
+            <span class="slider"></span>
+          </label>
+          <span class="switch-label">
+            Rolling context
+            <small>Send only the system prompt + the last N turns. Off = the whole conversation every time (grows cost and can hit the model's context limit).</small>
+          </span>
+        </div>
+        <div class="field">
+          <label class="lbl">Turns kept</label>
+          <input type="number" id="contextTurns" min="2" max="100" step="1" value="20" />
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><div class="card-title">Civitai data</div></div>
+        <div class="field">
+          <label class="lbl" for="civitaiMcpMode">Assistant access</label>
+          <select id="civitaiMcpMode">
+            <option value="off">Off</option>
+            <option value="read">Read-only</option>
+            <option value="full">Full — confirm writes</option>
+          </select>
+          <small>Read-only exposes CivitAI's annotated read tools. Full also exposes write tools, but every write requires your confirmation.</small>
+        </div>
+        <div class="field">
+          <label class="lbl">Civitai API token (optional)</label>
+          <div class="password-wrapper">
+            <input type="password" id="civitaiApiToken" placeholder="Optional token for CivitAI API and Site MCP" />
+            <button class="password-toggle" data-target="civitaiApiToken">Show</button>
+          </div>
+          <small>Catalog lookups use the active CivitAI tab and its login session. This optional token also supports API and Site MCP access. Account browsing settings and server access rules still apply.</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- System prompt -->
+    <div class="card span-2">
+      <div class="prompt-head">
+        <div class="card-title">System prompt</div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span class="char-count" id="promptCharCount">0 chars</span>
+          <button class="btn btn-ghost btn-sm" id="restorePromptBtn">Restore default</button>
+        </div>
+      </div>
+      <textarea id="systemPrompt" class="mono" rows="16"></textarea>
+      <div class="hint">The default prompt carries the 2026 image <b>and</b> video prompt-craft knowledge (SDXL-family, natural-language, and video models), the in-page tool contract (vision, page actions), and the adult-content operator grant. Customizing replaces all of it — use <b>Restore default</b> to get the latest back.</div>
+    </div>
+
+    <!-- Local diagnostics -->
+    <div class="card span-2" style="margin-top:18px">
+      <div class="diagnostic-head">
+        <div>
+          <div class="card-title">Diagnostic logs</div>
+          <p class="card-desc" style="margin:6px 0 0">Recent extension warnings and errors are kept locally so intermittent CivitAI breakage can be diagnosed after the fact. Credentials, embedded images, URL queries, and prompt-shaped fields are redacted before storage.</p>
+        </div>
+        <span class="diagnostic-count" id="diagnosticCount">Loading…</span>
+      </div>
+      <label style="display:flex; align-items:center; gap:10px; margin-top:16px">
+        <input type="checkbox" id="debugMode"> Debug mode — record chat, tool, and form-verification events
+      </label>
+      <p class="hint">Keeps the newest 250 events locally, including text lengths and whitespace comparisons. Prompt bodies and images are excluded from the trace. Turn on before reproducing a problem, then export the logs.</p>
+      <div class="diagnostic-actions">
+        <button class="btn btn-ghost btn-sm" id="openLogDirectoryBtn">Open log directory</button>
+        <button class="btn btn-primary btn-sm" id="exportLogsBtn">Export logs to shareable file</button>
+        <button class="btn btn-ghost btn-sm" id="exportChatDebugBtn">Export active chat + logs</button>
+      </div>
+      <p class="hint">The active-chat export includes conversation text and proposed prompts, even for chats made before debug mode was enabled. Image attachments and provider settings are omitted.</p>
+      <div class="diagnostic-result" id="diagnosticResult" aria-live="polite">Only an export creates a file in Downloads. Review it before sharing; redaction is best-effort.</div>
+    </div>
+  </div>
+
+  <script type="module" src="./main.ts"></script>
+</body>
+</html>
